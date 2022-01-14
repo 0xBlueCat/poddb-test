@@ -58,9 +58,9 @@ async function main(){
     const data = new podsdk.WriteBuffer().writeString('Eric').writeUint8(randomInt(10,40)).getBytes();
 
     const newTagClassEvt = await newTagClass();
-    await setTag(newTagClassEvt.ClassId, tagObject, data);
-    await setTag(newTagClassEvt.ClassId, podsdk.TagObject.fromNFT(randomAddress, 1200),data);
-    await setTag(newTagClassEvt.ClassId, podsdk.TagObject.fromTagClass(ethers.utils.hexlify(randomBytes(18))),data);
+    await setTag(newTagClassEvt.classId, tagObject, data);
+    await setTag(newTagClassEvt.classId, podsdk.TagObject.fromNFT(randomAddress, 1200),data);
+    await setTag(newTagClassEvt.classId, podsdk.TagObject.fromTagClass(ethers.utils.hexlify(randomBytes(18))),data);
     // await deleteTag(newTagClassEvt.ClassId, tagObject);
 }
 
