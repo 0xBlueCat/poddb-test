@@ -9,7 +9,7 @@ const wallet = new ethers.Wallet(
   "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 ).connect(provider);
 const wallet2 = new ethers.Wallet(
-  "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+  "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
 ).connect(provider);
 
 const tagClassAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
@@ -115,6 +115,7 @@ async function newTagClass(
   options?: {
     agent?: TagAgent;
     contract?: string;
+    url?: string;
   }
 ): Promise<podsdk.NewTagClassLog> {
   let newTagClassTx;
@@ -128,6 +129,7 @@ async function newTagClass(
   } else {
     newTagClassTx = await tagClassCtr.newValueTagClass(name, desc, fields, {
       agent: options ? options.agent : undefined,
+      url: options ? options.url : undefined,
     });
   }
   newTagClassTx.wait();
@@ -257,18 +259,28 @@ async function generateTagClassTag() {
 async function generateAddressAgentTag() {
   console.log("generateAddressAgentTag");
 
-  const tagClass = await newTagClass("meta", "meta of address", [],{
-    agent:TagAgent.fromAddress(wallet2.address),
+  const tagClass = await newTagClass("meta", "meta of address", [], {
+    agent: TagAgent.fromAddress(wallet2.address),
   });
 
-  await setTag(tagClass.classId, TagObject.fromAddress(wallet.address))
+  await setTag(tagClass.classId, TagObject.fromAddress(wallet.address));
 }
 
 async function generateTagClassAgentTag() {
   console.log("generateTagClassAgentTag");
 
-  const agentTagClass = await newTagClass("agentTagClass", "Agent of TagClass");
-  let tagObject = podsdk.TagObject.fromAddress(wallet2.address);
+  tagClassCtr = tagClassCtr.connectSigner(wallet2);
+  tagCtr = tagCtr.connectSigner(wallet2);
+
+  const agentTagClass = await newTagClass(
+    "agentTagClass",
+    "Agent of TagClass",
+    undefined,
+    {
+      url: "url",
+    }
+  );
+  let tagObject = podsdk.TagObject.fromAddress(wallet.address);
   await setTag(agentTagClass.classId, tagObject);
 
   const tagClass = await newTagClass(
@@ -289,7 +301,6 @@ async function generateTagClassAgentTag() {
     }
   );
 
-  tagCtr.connectSigner(wallet2);
   let data = new podsdk.WriteBuffer()
     .writeString("Espresso")
     .writeString("Italy")
@@ -314,7 +325,8 @@ async function generateTagClassAgentTag() {
   tagObject = podsdk.TagObject.fromAddress(randomAddress);
   await setTag(tagClass.classId, tagObject, data, 3600);
 
-  tagCtr.connectSigner(wallet);
+  tagClassCtr = tagClassCtr.connectSigner(wallet);
+  tagCtr = tagCtr.connectSigner(wallet);
 }
 
 async function generateLogicTagClass(): Promise<void> {
